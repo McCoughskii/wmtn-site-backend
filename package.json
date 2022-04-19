@@ -1,0 +1,40 @@
+{
+  "name": "wmtn-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc --build tsconfig.json",
+    "build:release": "npm run clean && tsc --build tsconfig.release.json && npm run zip",
+    "build:full": "npm run clean && tsc --build tsconfig.json",
+    "clean": "rimraf dist",
+    "start": "node dist/index.js",
+    "start:dev": "npm run build:full && node dist/index.js",
+    "start:nodemon": "nodemon --exec \"npm run start:dev\" --config \"nodemon.json\"",
+    "zip": "7z a -tzip dist.zip dist LICENSE .env.example package.json package-lock.json"
+  },
+  "keywords": [],
+  "author": "Serabus/McCoughskii",
+  "license": "MIT",
+  "devDependencies": {
+    "@tsconfig/node16": "^1.0.2",
+    "@types/express": "^4.17.13",
+    "@types/node": "^17.0.23",
+    "@types/node-fetch": "^2.6.1",
+    "@types/node-schedule": "^1.3.2",
+    "@typescript-eslint/eslint-plugin": "^5.19.0",
+    "@typescript-eslint/parser": "^5.19.0",
+    "eslint": "^8.13.0",
+    "nodemon": "^2.0.15",
+    "rimraf": "^3.0.2",
+    "typescript": "^4.6.2"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.0",
+    "express": "^4.17.3",
+    "fast-xml-parser": "^4.0.7",
+    "puppeteer": "^13.5.2"
+  }
+}
