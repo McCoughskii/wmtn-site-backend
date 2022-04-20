@@ -26,12 +26,6 @@ export default function App() {
 		res.sendFile("favicon.ico", { root: process.env.__DIRNAME });
 	});
 
-	app.use((_, res, next) => {
-		res.header("Access-Control-Allow-Origin", "*");
-		res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-		next();
-	});
-
 	songList();
 	upcomingEvents();
 	getCurrentWeather();
