@@ -48,6 +48,12 @@ async function getSongList() {
 	// split the previous songs into an array of strings by the SONG_LIST_PREVIOUS_SELECTOR_SPLIT env variable
 	const previousSongsArray = previousSongs.split(process.env.SONG_LIST_PREVIOUS_SELECTOR_SPLIT || "");
 
+	currentSong.replace("&amp;", "&");
+	nextSong.replace("&amp;", "&");
+	previousSongsArray.forEach((song, index) => {
+		previousSongsArray[index] = song.replace("&amp;", "&");
+	});
+
 
 	// close the browser
 	await browser.close();
