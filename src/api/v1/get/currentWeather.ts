@@ -23,8 +23,7 @@ export default async function currentWeather() {
 }
 
 async function getWeather(query?: string) {
-	
-	const now = Math.round(Date.now()/1000);
+	const now = Math.round(Date.now() / 1000);
 
 	// only update weather if it has been 15 minutes since last update
 	if (now - lastUpdate < 900) {
@@ -46,7 +45,7 @@ async function getWeather(query?: string) {
 
 	weather = json;
 
-	if(lastUpdate === json.current.last_updated_epoch) {
+	if (lastUpdate === json.current.last_updated_epoch) {
 		console.log("Weather has not been updated yet");
 
 		return weather;

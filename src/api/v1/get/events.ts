@@ -4,18 +4,15 @@ import { app } from "../../api.js";
 
 export default async function EventMain() {
 	app.get("/v1/events", async (req, res) => {
-		
-		
 		res.send(await getEvents());
 	});
 }
 
 async function getEvents() {
 	const events = await pullUpcomingEvents();
-	
+
 	// use the events we got from the rss feed and format them into a json object
-	const eventList = events.map(event => {
-		
+	const eventList = events.map((event) => {
 		return CreateEvent(event);
 	});
 
@@ -26,15 +23,15 @@ async function pullUpcomingEvents() {
 	// const response = await fetch("https://www.sasweb.org/calendar/calendar_361.rss");
 	const response = await fetch(process.env.UPCOMING_EVENTS_URL || "");
 	const xml = await response.text();
-	
+
 	const parser = new XMLParser();
 	const json = parser.parse(xml);
 
-	if(!json.rss) {
+	if (!json.rss) {
 		return [];
 	}
 
-	if(!json.rss.channel) {
+	if (!json.rss.channel) {
 		return [];
 	}
 
@@ -51,16 +48,14 @@ async function pullUpcomingEvents() {
 	return [items];
 }
 
-function CreateEvent(item: { description: string; title: string; }) {
-	
+function CreateEvent(item: { description: string; title: string }) {
 	const details: string[] = item.description.split("<br />");
-	const Event: {[key:string]:string} = {};
+	const Event: { [key: string]: string } = {};
 
 	Event.title = item.title;
 	Event.description = "no description provided.";
 
 	details.forEach((detail: string) => {
-
 		//remove \n\t\t\t\t from the string
 		const trimmedDetail = detail.replace("\n\t\t\t\t", "");
 

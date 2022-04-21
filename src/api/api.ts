@@ -7,11 +7,9 @@ import songList from "./v1/get/songList.js";
 export const app = express();
 
 export default function App() {
-
 	app.use(express.static("public"));
 
 	app.use((req, res, next) => {
-		
 		res.header("Access-Control-Allow-Origin", "*");
 		res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 
