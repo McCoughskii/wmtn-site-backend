@@ -3,6 +3,7 @@ import getCurrentWeather from "./v1/get/currentWeather.js";
 import upcomingEvents from "./v1/get/events.js";
 import getLiveIssues from "./v1/get/liveIssues.js";
 import songList from "./v1/get/songList.js";
+import getStream from "./v1/get/stream.js";
 
 export const app = express();
 
@@ -28,6 +29,7 @@ export default function App() {
 	upcomingEvents();
 	getCurrentWeather();
 	getLiveIssues();
+	getStream();
 
 	app.use((_req, res, next) => {
 		res.sendStatus(404);
