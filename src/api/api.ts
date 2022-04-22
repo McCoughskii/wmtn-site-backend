@@ -20,6 +20,10 @@ export default function App() {
 		next();
 	});
 
+	app.get("/", (req, res) => {
+		res.sendFile("/home/ubuntu/ftp/files/playingnow.html");
+	});
+
 	// send favicon
 	app.get("/favicon.ico", (_, res) => {
 		res.sendFile("favicon.ico", { root: process.env.__DIRNAME });
