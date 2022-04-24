@@ -4,57 +4,98 @@ import { SongListData } from "../types/songList.js";
 import dotenv from "dotenv";
 dotenv.config();
 
-let songListData: SongListData = {
+const songListDataDefault: SongListData = {
 	CurrentSong: "Waiting for song...",
 	NextSong: "Waiting for song...",
-	PreviousSongs: [],
+	PreviousSongs: []
 };
 
-setInterval(async () => {
-	songListData = await getSongList().catch() || songListData;
-}, 5000);
-
-export default function songList() {
-	app.get("/v1/songList", (_, res) => {
-
-		if(songListData.CurrentSong === "Waiting for song...") {
-			return;
-		}
-
-		res.send(songListData);
-	});
+export default function setup() {
+	new SongList();
+	return;
 }
 
-async function getSongList() {
+class SongList {
+	songListData: SongListData;
+	browser?: puppeteer.Browser;
+	page?: puppeteer.Page;
+	constructor() {
 
-	const browser = await puppeteer.launch();
-	const page = await browser.newPage();
-	await page.goto(process.env.SONG_LIST_URL || "");
+		this.songListData = songListDataDefault;
+		this.browser = undefined;
+		this.page = undefined;
 
-	// wait for all of the elements to load
-	await page.waitForSelector(process.env.SONG_LIST_CURRENT_SELECTOR || "");
-	await page.waitForSelector(process.env.SONG_LIST_NEXT_SELECTOR || "");
-	await page.waitForSelector(process.env.SONG_LIST_PREVIOUS_SELECTOR || "");
+		this.updateSongList().catch(async (err) => {
+			console.error(err);
+			await this.browser?.close();
+			this.updateSongList();
+		});
 
-	// get the current song from the page
-	const currentSong = await page.$eval(process.env.SONG_LIST_CURRENT_SELECTOR || "", (el) => el.innerHTML);
+		app.get("/v1/songList", (_req, res) => {
+			res.json(this.songListData);
+			return;
+		});
+	}
 
-	// get the next song from the page
-	const nextSong = await page.$eval(process.env.SONG_LIST_NEXT_SELECTOR || "", (el) => el.innerHTML);
+	async updateSongList() {
 
-	// get the previous songs from the page
-	const previousSongs = await page.$eval(process.env.SONG_LIST_PREVIOUS_SELECTOR || "", (el) => el.innerHTML);
+		if (!this.browser) {
+			this.browser = await puppeteer.launch();
+			this.page = await this.browser.newPage();
+			await this.page.goto(process.env.SONG_LIST_URL || "");
+		}
 
-	// split the previous songs into an array of strings by the SONG_LIST_PREVIOUS_SELECTOR_SPLIT env variable
-	const previousSongsArray = previousSongs.split(process.env.SONG_LIST_PREVIOUS_SELECTOR_SPLIT || "");
+		if (!this.page) {
+			this.page = await this.browser.newPage();
+			await this.page.goto(process.env.SONG_LIST_URL || "");
+		}
 
-	// close the browser
-	await browser.close();
+		// wait for all of the elements to load
+		await this.page.waitForSelector(process.env.SONG_LIST_CURRENT_SELECTOR || "");
+		await this.page.waitForSelector(process.env.SONG_LIST_NEXT_SELECTOR || "");
+		await this.page.waitForSelector(process.env.SONG_LIST_PREVIOUS_SELECTOR || "");
 
-	// return the all the data from the songlist page
-	return {
-		CurrentSong: currentSong,
-		NextSong: nextSong,
-		PreviousSongs: previousSongsArray
-	};
+		// get the current song from the page
+		const currentSong = await this.page.$eval(
+			process.env.SONG_LIST_CURRENT_SELECTOR || "",
+			(el) => el.innerHTML
+		);
+
+		// get the next song from the page
+		const nextSong = await this.page.$eval(
+			process.env.SONG_LIST_NEXT_SELECTOR || "",
+			(el) => el.innerHTML
+		);
+
+		// get the previous songs from the page
+		const previousSongs = await this.page.$eval(
+			process.env.SONG_LIST_PREVIOUS_SELECTOR || "",
+			(el) => el.innerHTML
+		);
+
+		// split the previous songs into an array of strings by the SONG_LIST_PREVIOUS_SELECTOR_SPLIT env variable
+		const previousSongsArray = previousSongs.split(
+			process.env.SONG_LIST_PREVIOUS_SELECTOR_SPLIT || ""
+		);
+
+		// update the song list data
+		this.songListData = {
+			CurrentSong: currentSong,
+			NextSong: nextSong,
+			PreviousSongs: previousSongsArray
+		};
+
+		console.log("Updated song list");
+
+		await this.page.waitForNavigation({ waitUntil: "domcontentloaded", timeout: 60000 });
+
+		// add some recursion
+		this.updateSongList().catch(async (err) => {
+			console.error(err);
+			await this.browser?.close();
+			this.updateSongList();
+		});
+
+		return;
+	}
 }
